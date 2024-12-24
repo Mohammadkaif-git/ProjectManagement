@@ -1,6 +1,7 @@
-import { createApi,fetchBaseQuery } from "@reduxjs/toolkit/query";
+import { createApi,fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { LargeNumberLike } from "crypto";
 
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 export interface Project{
     id: number;
@@ -45,33 +46,70 @@ export interface Attachement{
 
 export interface Task{
     id: number;
-    title:string;
-    description:string;
-    status?:Status;
-    priority?:Priority;
-    tags?:string;
-    startDate?:string;
-    dueDate?:string;
-    points?:number;
-    projectId:number;
-    authorId?:number;
-    assignedUserId?:number;
-
-    author?:User;
-    assignee?:User;
-    comments?:Comment[];
-    attachement?:Attachement[];
+    title: string;
+    description: string;
+    status: Status;
+    priority: string;
+    tags?: string;
+    startDate?: string;
+    dueDate?: string;
+    points?: number;
+    attachments?: Array<{
+        fileURL: string;
+        fileName: string;
+    }>;
+    comments?: Array<any>;
+    author?: {
+        userId: number;
+        username: string;
+        profilePictureUrl: string;
+    };
+    assignee?: {
+        userId: number;
+        username: string;
+        profilePictureUrl: string;
+    };
 }
 export const api=createApi({
-    baseQuery:fetchBaseQuery({baseUrl:process.env.NEXT_PUBLIC_API_BASE_URL}),
+    baseQuery:fetchBaseQuery({
+        baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000',
+    }),
     reducerPath:"api",
-    tagTypes:[],
+    tagTypes:["Projects","Tasks"],
     endpoints:(build)=>({getProjects:build.query<Project[],void>({
         query:()=>"projects",
         providesTags:["Projects"],
+    }),
+    createProject:build.mutation<Project,Partial<Project>>({
+        query:(project)=>({
+            url:"projects",
+            method:"POST",
+            body:project,
+        }),
+        invalidatesTags:["Projects"],
+    }),
+    updateTaskStatus:build.mutation<Task,{taskId:number,status:Status}>({
+        query:({taskId,status})=>({
+            url:`tasks/${taskId}/status`,
+            method:"PATCH",
+            body:{status},
+        }),
+        invalidatesTags:(result,error,{taskId})=>[{type:"Tasks",id:taskId}],
+    }),
+    getTasks:build.query<Task[],{projectId:number}>({
+        query:(projectId)=>"tasks?projectId=${projectId}",
+        providesTags:(result)=>result?result.map(({id})=>({type:"Tasks" as const,id})):[{type:"Tasks" as const}],
+    }),
+    createTask:build.mutation<Project,Partial<Task>>({
+        query:(task)=>({
+            url:"task",
+            method:"POST",
+            body:task,
+        }),
+        invalidatesTags:["Tasks"],
     }),
 }),
        
 });
 
-export const {}=api;
+export const {useGetProjectsQuery,useCreateProjectMutation,useUpdateTaskStatusMutation,useGetTasksQuery,useCreateTaskMutation}=api;

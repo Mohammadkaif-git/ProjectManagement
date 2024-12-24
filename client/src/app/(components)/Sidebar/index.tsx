@@ -1,19 +1,26 @@
 "use client";
 import { useAppDispatch, useAppSelector } from "@/app/redux";
+import { RootState } from "@/app/redux";
 import { setIsSideBarCollapsed } from "@/state";
 import { AlertCircle, AlertOctagon, AlertTriangle, Briefcase, ChevronDown, ChevronUp, Home, Layers3, LockIcon, LucideIcon, Search, Settings, ShieldAlert, User, Users, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link"; 
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import { useGetProjectsQuery } from "@/state/api";
 const Sidebar = () => {
   const [showProjects, setShowProjects] = useState(true);
   const [showPriority, setShowPriority] = useState(true);
+  const { data: projects } = useGetProjectsQuery();
   const dispatch = useAppDispatch();
   const isSideBarCollapsed = useAppSelector(
-    (state) => state.global.isSideBarCollapsed
+    (state: RootState) => state.global.isSideBarCollapsed
   );
+
+  useEffect(() => {
+    setShowProjects(true);
+    setShowPriority(true);
+  }, []);
 
   const sidbarClassNames = `fixed flex flex-col h-[100%] justify-between shadow-xl
     transition-all duration-300 z-40 dark:bg-black overflow-y-auto bg-white 
@@ -63,15 +70,34 @@ const Sidebar = () => {
           <SidebarLink href="/teams" icon={Users} label="Team" />
         </nav>
 
-        <button onClick={()=> setShowProjects((prev)=>!prev)} 
-        className="flex w-full items-center justify-between px-8 py-3 text-gray-500 dark:text-white">
-            <span className="">Projects</span>
+        {/* Projects Section */}
+        <div>
+          <button 
+            onClick={() => setShowProjects((prev) => !prev)}
+            className="flex w-full items-center justify-between px-8 py-3 text-gray-500 dark:text-white"
+          >
+            <span>Projects</span>
             {showProjects ? (
-                <ChevronUp className="h-5 w-5"/>
-            ):<ChevronDown className="h-5 w-5"/>}
+              <ChevronUp className="h-5 w-5"/>
+            ) : (
+              <ChevronDown className="h-5 w-5"/>
+            )}
+          </button>
 
-            {/*Project Lists*/}
-        </button>
+          {/* Project List - Moved outside button */}
+          {showProjects && (
+            <div className="flex flex-col w-full">
+              {projects?.map((project) => (
+                <SidebarLink
+                  key={project.id}
+                  icon={Briefcase}
+                  href={`/projects/${project.id}`}
+                  label={project.name}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         <button onClick={()=> setShowPriority((prev)=>!prev)} 
         className="flex w-full items-center justify-between px-8 py-3 text-gray-500 dark:text-white">

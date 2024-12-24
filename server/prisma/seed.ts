@@ -1,41 +1,44 @@
-
+import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
-const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-async function deleteAllData(orderedFileNames: string[]) {
-  const modelNames = orderedFileNames.map((fileName) => {
-    const modelName = path.basename(fileName, path.extname(fileName));
-    return modelName.charAt(0).toUpperCase() + modelName.slice(1);
-  });
-
-  for (const modelName of modelNames) {
-    const model: any = prisma[modelName as keyof typeof prisma];
-    try {
-      await model.deleteMany({});
-      console.log(`Cleared data from ${modelName}`);
-    } catch (error) {
-      console.error(`Error clearing data from ${modelName}:`, error);
-    }
+async function deleteAllData() {
+  try {
+    console.log('Deleting data in order...');
+    
+    await prisma.comment.deleteMany({});
+    await prisma.attachment.deleteMany({});
+    await prisma.taskAssignment.deleteMany({});
+    await prisma.task.deleteMany({});
+    await prisma.projectTeam.deleteMany({});
+    await prisma.project.deleteMany({});
+    await prisma.user.deleteMany({});
+    await prisma.team.deleteMany({});
+    
+    console.log('Successfully deleted all data');
+  } catch (error) {
+    console.error('Error during deletion:', error);
+    throw error;
   }
 }
 
 async function main() {
   const dataDirectory = path.join(__dirname, "seedData");
 
+  // Reorder files to respect foreign key constraints
   const orderedFileNames = [
-    "team.json",
-    "project.json",
-    "projectTeam.json",
-    "user.json",
-    "task.json",
-    "attachment.json",
-    "comment.json",
-    "taskAssignment.json",
+    "team.json",         // 1st: Teams
+    "user.json",         // 2nd: Users (needs teams)
+    "project.json",      // 3rd: Projects
+    "projectTeam.json",  // 4th: Project-Team associations
+    "task.json",         // 5th: Tasks (needs users and projects)
+    "taskAssignment.json", // 6th: Task assignments (needs tasks and users)
+    "attachment.json",   // 7th: Attachments (needs tasks)
+    "comment.json"       // 8th: Comments (needs tasks and users)
   ];
 
-  await deleteAllData(orderedFileNames);
+  await deleteAllData();
 
   for (const fileName of orderedFileNames) {
     const filePath = path.join(dataDirectory, fileName);
@@ -45,7 +48,19 @@ async function main() {
 
     try {
       for (const data of jsonData) {
-        await model.create({ data });
+        try {
+          await model.create({ data });
+        } catch (createError: any) {
+          if (createError.code === 'P2002') {
+            console.log(`Skipping duplicate entry in ${modelName}`);
+            continue;
+          }
+          if (createError.code === 'P2003') {
+            console.error(`Foreign key constraint failed in ${modelName}:`, data);
+            continue;
+          }
+          throw createError;
+        }
       }
       console.log(`Seeded ${modelName} with data from ${fileName}`);
     } catch (error) {
@@ -55,5 +70,11 @@ async function main() {
 }
 
 main()
-  .catch((e) => console.error(e))
-  .finally(async () => await prisma.$disconnect());
+  .catch((e) => {
+    console.error('Seeding failed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+    console.log('Seeding completed');
+  });
