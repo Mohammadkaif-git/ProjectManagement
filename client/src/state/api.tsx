@@ -96,9 +96,27 @@ export const api=createApi({
         }),
         invalidatesTags:(result,error,{taskId})=>[{type:"Tasks",id:taskId}],
     }),
-    getTasks:build.query<Task[],{projectId:number}>({
-        query:(projectId)=>"tasks?projectId=${projectId}",
-        providesTags:(result)=>result?result.map(({id})=>({type:"Tasks" as const,id})):[{type:"Tasks" as const}],
+    getTaskById: build.query<Task, number>({
+        query: (taskId) => `/tasks/${taskId}`,
+        providesTags: (result, error, taskId) => [{ type: 'Tasks', id: taskId }],
+    }),
+    getTasks: build.query<Task[], { projectId?: number }>({
+        query: ({ projectId }) => {
+            const url = projectId ? `/tasks?projectId=${projectId}` : '/tasks';
+            console.log('Making request to:', url); // Debug log
+            return url;
+        },
+        transformResponse: (response: Task[]) => {
+            console.log('Received response:', response); // Debug log
+            return response;
+        },
+        providesTags: (result) =>
+            result
+                ? [
+                    ...result.map(({ id }) => ({ type: 'Tasks' as const, id })),
+                    { type: 'Tasks', id: 'LIST' },
+                ]
+                : [{ type: 'Tasks', id: 'LIST' }],
     }),
     createTask:build.mutation<Project,Partial<Task>>({
         query:(task)=>({
@@ -112,4 +130,4 @@ export const api=createApi({
        
 });
 
-export const {useGetProjectsQuery,useCreateProjectMutation,useUpdateTaskStatusMutation,useGetTasksQuery,useCreateTaskMutation}=api;
+export const {useGetProjectsQuery,useCreateProjectMutation,useUpdateTaskStatusMutation,useGetTasksQuery,useGetTaskByIdQuery,useCreateTaskMutation}=api;

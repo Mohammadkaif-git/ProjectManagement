@@ -19,49 +19,53 @@ const ProjectHeader = ({ activeTab, setActiveTab }: Props) => {
         <Header name="Product Design Development"/>
       </div>
 
-      <div className='flex items-center gap-3 pb-2 pl-6'>
-          <button className='text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-200'>
-            <Filter className='h-5 w-5'/>
-          </button>
-          <button className='text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-200'>
-            <Share2Icon className='h-5 w-5'/>
-          </button>
-          <div className='relative'>
-            <input type='text' placeholder='Search Task'
-            className='rounded-md border py-1 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-dark-secondary dark:bg-dark-secondary dark:text-white'/>
-               <Grid3X3 className='absolute left-3 top-2 h-4 w-4 text-gray-400 dark:text-neutral-500'/>
-          </div>
-        </div>
-
       {/* Tabs Section */}
       <div className='px-6 border-t border-gray-200 dark:border-stroke-dark'>
-        <div className='flex space-x-8'>
-          <TabButton 
-            name="Board" 
-            icon={<Grid3X3 className="h-5 w-5" />} 
-            setActiveTab={setActiveTab} 
-            activeTab={activeTab}
-          />
-          <TabButton 
-            name="List" 
-            icon={<List className="h-5 w-5" />} 
-            setActiveTab={setActiveTab} 
-            activeTab={activeTab}
-          />
-          <TabButton 
-            name="Timeline" 
-            icon={<Clock className="h-5 w-5" />} 
-            setActiveTab={setActiveTab} 
-            activeTab={activeTab}
-          />
-          <TabButton 
-            name="Table" 
-            icon={<Table className="h-5 w-5" />} 
-            setActiveTab={setActiveTab} 
-            activeTab={activeTab}
-          />
+        <div className='flex justify-between items-center'>
+          <div className='flex space-x-8'>
+            <TabButton 
+              name="Board" 
+              icon={<Grid3X3 className="h-5 w-5" />} 
+              setActiveTab={setActiveTab} 
+              activeTab={activeTab}
+            />
+            <TabButton 
+              name="List" 
+              icon={<List className="h-5 w-5" />} 
+              setActiveTab={setActiveTab} 
+              activeTab={activeTab}
+            />
+            <TabButton 
+              name="Timeline" 
+              icon={<Clock className="h-5 w-5" />} 
+              setActiveTab={setActiveTab} 
+              activeTab={activeTab}
+            />
+            <TabButton 
+              name="Table" 
+              icon={<Table className="h-5 w-5" />} 
+              setActiveTab={setActiveTab} 
+              activeTab={activeTab}
+            />
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <button className='text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-200'>
+              <Filter className='h-5 w-5'/>
+            </button>
+            <button className='text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-200'>
+              <Share2Icon className='h-5 w-5'/>
+            </button>
+            <div className='relative'>
+              <input 
+                type='text' 
+                placeholder='Search Task'
+                className='rounded-md border py-1 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-dark-secondary dark:bg-dark-secondary dark:text-white'
+              />
+              <Grid3X3 className='absolute left-3 top-2 h-4 w-4 text-gray-400 dark:text-neutral-500'/>
+            </div>
+          </div>
         </div>
-     
       </div>
     </div>
   );

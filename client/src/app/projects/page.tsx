@@ -3,16 +3,31 @@
 import { useState } from 'react';
 import ProjectHeader from './ProjectHeader';
 import BoardView from './BoardView';
+import ListView from './ListView';
+import TimelineView from "./TimeLineView";
+import { useParams } from 'next/navigation';
 
-type Params = {
-    params:{
-        id:string;
-    }
-}    
-const ProjectsPage = ({params}:Params) => {
-    const{id}=params;
+const ProjectsPage = () => {
+    const params = useParams();
+    const projectId = params.id as string;  // Get the actual project ID from URL
     const [activeTab, setActiveTab] = useState("Board");
     const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
+
+    // Render the appropriate view based on activeTab
+    const renderView = () => {
+        switch (activeTab) {
+            case "Board":
+                return <BoardView id={projectId} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />;
+            case "List":
+                return <ListView id={projectId} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />;
+            case "Timeline":
+                return <TimelineView id={projectId} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />;
+            case "Table":
+                return <div>Table View Coming Soon</div>;
+            default:
+                return <BoardView id={projectId} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />;
+        }
+    };
 
     return (
         <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-dark-bg">
@@ -20,7 +35,9 @@ const ProjectsPage = ({params}:Params) => {
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab}
             />
-            <BoardView id={activeTab} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
+            <div className="p-6">
+                {renderView()}
+            </div>
         </div>
     );
 };
